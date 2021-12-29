@@ -54,7 +54,7 @@ async function writeMarkdownFilesPromise(posts, config ) {
 		} else {
 			const payload = {
 				item: post,
-				name: (config.includeOtherTypes ? post.meta.type + ' - ' : '') + post.meta.slug,
+				name: (post.meta.draft ? 'draft/' : '') + (config.includeOtherTypes ? post.meta.type + ' - ' : '') + post.meta.slug,
 				destinationPath,
 				delay
 			};
@@ -161,6 +161,10 @@ function getPostPath(post, config) {
 
 	// start with base output dir
 	const pathSegments = [config.output];
+
+	if (post.meta.draft) {
+		pathSegments.push('_drafts');
+	}
 
 	// create segment for post type if we're dealing with more than just "post"
 	if (config.includeOtherTypes) {

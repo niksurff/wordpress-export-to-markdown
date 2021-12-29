@@ -70,6 +70,13 @@ const options = [
 		default: true
 	},
 	{
+		name: 'include-drafts',
+		aliases: ['includedrafts'],
+		type: 'boolean',
+		description: 'Include post drafts (in `_drafts` folder)',
+		default: true
+	},
+	{
 		name: 'include-other-types',
 		type: 'boolean',
 		description: 'Include custom post types and pages',
