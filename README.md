@@ -1,9 +1,8 @@
----
-:heavy_heart_exclamation: This is a clone. I made the following changes:
+:heavy_heart_exclamation: This is a fork. These are the changes I made:
 
-* ...
----
+- [X] Add option to include drafts inside a `_drafts` folder.
 
+---
 
 # wordpress-export-to-markdown
 

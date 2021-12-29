@@ -55,12 +55,23 @@ function collectPosts(data, postTypes, config) {
 	let allPosts = [];
 	postTypes.forEach(postType => {
 		const postsForType = getItemsOfType(data, postType)
-			.filter(post => post.status[0] !== 'trash' && post.status[0] !== 'draft')
+			.filter(post => {
+				if(post.status[0] == 'trash') {
+					return false;
+				}
+				
+				if(!config.includeDrafts && post.status[0] == 'draft') {
+					return false;
+				}
+
+				return true;
+			})
 			.map(post => ({
 				// meta data isn't written to file, but is used to help with other things
 				meta: {
 					id: getPostId(post),
 					slug: getPostSlug(post),
+					draft: post.status[0] == 'draft',
 					coverImageId: getPostCoverImageId(post),
 					type: postType,
 					imageUrls: []
@@ -92,7 +103,9 @@ function getPostId(post) {
 }
 
 function getPostSlug(post) {
-	return decodeURIComponent(post.post_name[0]);
+	let slug = decodeURIComponent(post.post_name[0]);
+
+	return slug || 'untitled-' + post.post_id;
 }
 
 function getPostCoverImageId(post) {
