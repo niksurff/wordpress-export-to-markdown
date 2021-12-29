@@ -1,3 +1,9 @@
+:heavy_heart_exclamation: This is a fork. These are the changes I made:
+
+- [X] Add option to include drafts inside a `_drafts` folder.
+
+---
+
 # wordpress-export-to-markdown
 
 A script that converts a WordPress export XML file into Markdown files suitable for a static site generator ([Gatsby](https://www.gatsbyjs.org/), [Hugo](https://gohugo.io/), [Jekyll](https://jekyllrb.com/), etc.).
