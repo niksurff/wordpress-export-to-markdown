@@ -4,7 +4,7 @@ const turndownPluginGfm = require('turndown-plugin-gfm');
 function initTurndownService() {
 	const turndownService = new turndown({
 		headingStyle: 'atx',
-		bulletListMarker: '-',
+		bulletListMarker: '*',
 		codeBlockStyle: 'fenced'
 	});
 
@@ -53,6 +53,32 @@ function initTurndownService() {
 		}
 	});
 
+	// remove links around images
+	/* turndownService.addRule('aImg', {
+		filter: node => node.nodeName === 'A' && node.firstChild.nodeName === 'IMG',
+		replacement: (content, node) => {
+			const img = node.firstChild;
+			const html = `<img src="${img.getAttribute('src')}">`;
+			return html;
+		}
+	}); */
+
+	turndownService.addRule('gallery', {
+		filter: node =>
+			node.nodeName === 'UL' &&
+			node.firstChild.nodeName === 'LI' &&
+			node.firstChild.firstChild.nodeName === 'FIGURE' &&
+			node.firstChild.firstChild.firstChild.nodeName === 'A' &&
+			node.firstChild.firstChild.firstChild.firstChild.nodeName === 'IMG',
+		replacement: (content, node) => {
+			const imgs = [...node.childNodes]
+				.map(li => li.firstChild.firstChild.firstChild)
+				.map(img => `<img src="${img.getAttribute('src')}" alt="${img.getAttribute('alt')}">`);
+			const html = `<Gallery>\n\t${imgs.join("\n\t")}\n</Gallery>`
+			return html;
+		}
+	});
+
 	return turndownService;
 }
 
@@ -68,6 +94,8 @@ function getPostContent(post, turndownService, config) {
 		// writeImageFile() will save all content images to a relative /images
 		// folder so update references in post content to match
 		content = content.replace(/(<img[^>]*src=").*?([^/"]+\.(?:gif|jpe?g|png))("[^>]*>)/gi, '$1images/$2$3');
+		// SCALED IMAGE REPLACE MARKER (see parser.js)
+		content = content.replace(/(\/[a-z0-9_]+)-[a-z0-9]+(\.(?:gif|jpe?g|png))/gi, '$1$2')
 	}
 
 	// this is a hack to make <iframe> nodes non-empty by inserting a "." which

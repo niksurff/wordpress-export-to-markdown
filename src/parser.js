@@ -5,6 +5,7 @@ const xml2js = require('xml2js');
 const shared = require('./shared');
 const settings = require('./settings');
 const translator = require('./translator');
+const { Console } = require('console');
 
 async function parseFilePromise(config) {
 	console.log('\nParsing...');
@@ -78,6 +79,8 @@ function collectPosts(data, postTypes, config) {
 				},
 				frontmatter: {
 					title: getPostTitle(post),
+					slug: getPostSlug(post),
+					aliasas: getAliases(post),
 					date: getPostDate(post),
 					categories: getCategories(post),
 					tags: getTags(post)
@@ -143,6 +146,12 @@ function getTags(post) {
 	return processCategoryTags(post, 'post_tag');
 }
 
+function getAliases(post) {
+	if (!post.postmeta) return [];
+
+	return post.postmeta.filter(meta => meta.meta_key[0] == '_wp_old_slug').map(meta => meta.meta_value[0]);
+}
+
 function processCategoryTags(post, domain) {
 	if (!post.category) {
 		return [];
@@ -177,8 +186,20 @@ function collectScrapedImages(data, postTypes) {
 
 			const matches = [...postContent.matchAll(/<img[^>]*src="(.+?\.(?:gif|jpe?g|png))"[^>]*>/gi)];
 			matches.forEach(match => {
+
+				// fix outdated image locations 2019/name.jpg => 2019/02/jpg
+				const dateTime = luxon.DateTime.fromRFC2822(post.pubDate[0], { zone: 'utc' });
+
+				// SCALED IMAGE REPLACE MARKER (see translator.js)
+				const year = String(dateTime.year)
+				const month =  String(dateTime.month).padStart(2, '0');
+
 				// base the matched image URL relative to the post URL
-				const url = new URL(match[1], postLink).href;
+				const url = new URL(match[1], postLink).href
+					.replace('https', 'http') // for local dev
+					.replace(/\-[^\/]+\.(gif|jpe?g|png)/, '.$1') // remove scaled image part
+					.replace(new RegExp(year + '\/' + '(?!' +month+ ')'), year + '/' + month + '/') // fix date path
+
 				images.push({
 					id: -1,
 					postId: postId,

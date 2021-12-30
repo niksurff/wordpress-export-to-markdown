@@ -60,7 +60,7 @@ const options = [
 		aliases: ['saveimages'],
 		type: 'boolean',
 		description: 'Save images attached to posts',
-		default: true
+		default: false
 	},
 	{
 		name: 'save-scraped-images',
@@ -68,6 +68,14 @@ const options = [
 		type: 'boolean',
 		description: 'Save images scraped from post body content',
 		default: true
+	},
+	{
+		name: 'save-original-images',
+		aliases: ['useoriginalimages'],
+		type: 'boolean',
+		description: 'Save original unscaled images (will alter `img>src` attributes)',
+		default: true,
+		when: (answers => answers['saveScrapedImages'])
 	},
 	{
 		name: 'include-drafts',
@@ -93,7 +101,10 @@ async function getConfig(argv) {
 	if (program.wizard) {
 		console.log('\nStarting wizard...');
 		const questions = options.map(option => ({
-			when: option.name !== 'wizard' && !option.isProvided,
+			when: answers =>
+				option.name !== 'wizard' &&
+				!option.isProvided &&
+				(option.when ? option.when(answers) : true),
 			name: camelcase(option.name),
 			type: option.prompt,
 			message: option.description + '?',
@@ -101,7 +112,7 @@ async function getConfig(argv) {
 	
 			// these are not used for all option types and that's fine
 			filter: option.coerce,
-			validate: option.validate
+			validate: option.validate,
 		}));
 		answers = await inquirer.prompt(questions);
 	} else {

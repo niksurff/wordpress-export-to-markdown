@@ -187,7 +187,7 @@ function getPostPath(post, config) {
 
 	// use slug fragment as folder or filename as specified
 	if (config.postFolders) {
-		pathSegments.push(slugFragment, 'index.md');
+		pathSegments.push(slugFragment, slugFragment + '.md');
 	} else {
 		pathSegments.push(slugFragment + '.md');
 	}
